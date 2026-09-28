@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GreenhouseMath - Greenhouse Math That Holds Up</title>
+<meta name="description" content="Heater sizing from real glazing U-values and design temperatures, ventilation CFM from true volume, and water-barrel thermal mass measured against the night it has to survive.">
+<link rel="canonical" href="https://ilanis-agent.github.io/greenhousemath/">
+<meta property="og:title" content="GreenhouseMath - Greenhouse Math That Holds Up">
+<meta property="og:description" content="Heater sizing from real glazing U-values and design temperatures, ventilation CFM from true volume, and water-barrel thermal mass measured against the night it has to survive.">
+<meta property="og:url" content="https://ilanis-agent.github.io/greenhousemath/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#14301d">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%F0%9F%8C%BF%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0e1a12; --card:#15271b; --ink:#e9f5e6; --muted:#9dc49d;
+  --accent:#5cbf7a; --accent2:#d4e86b; --line:#2b4a33; --good:#8fd18a; --warn:#f2c14e; --bad:#e86a5a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:1rem}
+.wrap{max-width:760px;margin:0 auto}
+header{text-align:center;padding:1.6rem 0 1.2rem}
+h1{font-size:2.1rem;color:var(--accent2);letter-spacing:.5px}
+.tag{color:var(--muted);margin-top:.3rem;font-size:.98rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.2rem;margin:1rem 0}
+.card h2{font-size:1.05rem;color:var(--accent);margin-bottom:.7rem}
+.row{display:flex;flex-wrap:wrap;gap:.9rem;align-items:flex-end;margin:.5rem 0}
+.field{display:flex;flex-direction:column;gap:.25rem}
+label{font-size:.8rem;color:var(--muted)}
+input,select{background:#0a140d;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:.45rem .6rem;font-size:1rem;width:8.5rem}
+input:focus,select:focus{outline:2px solid var(--accent)}
+button{background:var(--accent);color:#0e1a12;border:0;border-radius:8px;padding:.5rem 1.1rem;font-size:.95rem;font-weight:700;cursor:pointer}
+button:hover{background:#7bd195}
+.presets{display:flex;flex-wrap:wrap;gap:.5rem;margin:.6rem 0 .2rem}
+.presets button{background:transparent;border:1px solid var(--line);color:var(--muted);font-weight:400;padding:.35rem .8rem;font-size:.85rem}
+.presets button:hover{border-color:var(--accent);color:var(--ink)}
+.big{font-size:1.3rem;font-weight:700;color:var(--accent2)}
+.result{margin-top:.6rem;font-size:1rem;min-height:1.4rem}
+.result small{color:var(--muted);display:block;margin-top:.25rem}
+.verdict-ok{color:var(--good)} .verdict-tight{color:var(--warn)} .verdict-bad{color:var(--bad)}
+.era{font-size:.85rem;color:var(--muted);margin-bottom:.6rem;font-style:italic}
+footer{margin:2rem 0 1rem;font-size:.8rem;color:var(--muted);border-top:1px solid var(--line);padding-top:1rem}
+footer code{color:var(--accent)}
+details{margin-top:.4rem} summary{cursor:pointer;color:var(--muted);font-size:.85rem}
+table{border-collapse:collapse;margin-top:.5rem;font-size:.9rem}
+td,th{border:1px solid var(--line);padding:.3rem .6rem;text-align:left}
+th{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>&#127807; GreenhouseMath</h1>
+<p class="tag">Greenhouse math that holds up. Heat, ventilation, thermal mass - sized for the coldest night, not the sales photo.</p>
+</header>
+
+<section class="card" id="c-heat">
+<h2>Heater sizing</h2>
+<p class="era">Heat leaves through every square foot of glazing, all night, at a rate set by the glazing and the temperature gap. Size for the design low, not the average.</p>
+<div class="presets" id="presets-heat"></div>
+<div class="row">
+  <div class="field"><label for="in-w">width (ft)</label><input id="in-w" type="number" min="4" max="40" step="1" value="10"></div>
+  <div class="field"><label for="in-l">length (ft)</label><input id="in-l" type="number" min="4" max="60" step="1" value="12"></div>
+  <div class="field"><label for="in-eave">eave height (ft)</label><input id="in-eave" type="number" min="4" max="12" step="0.5" value="6"></div>
+  <div class="field"><label for="in-ridge">ridge height (ft)</label><input id="in-ridge" type="number" min="4" max="16" step="0.5" value="9"></div>
+</div>
+<div class="row">
+  <div class="field"><label for="in-glaze">glazing</label>
+    <select id="in-glaze">
+      <option value="1.1">single glass (U 1.1)</option>
+      <option value="0.7" selected>double poly film (U 0.7)</option>
+      <option value="0.58">twin-wall polycarbonate (U 0.58)</option>
+    </select>
+  </div>
+  <div class="field"><label for="in-inside">inside target (F)</label><input id="in-inside" type="number" min="35" max="80" step="1" value="55"></div>
+  <div class="field"><label for="in-outside">design low (F)</label><input id="in-outside" type="number" min="-30" max="60" step="1" value="15"></div>
+</div>
+<button id="btn-heat">Heat math</button>
+<div class="result" id="out-heat"></div>
+</section>
+
+<section class="card" id="c-vent">
+<h2>Summer ventilation</h2>
+<p class="era">Summer kills faster than winter: a closed greenhouse in sun spikes 40 degrees over outside. The rule is one full air change per minute.</p>
+<div class="row">
+  <div class="field"><label for="in-vw">width (ft)</label><input id="in-vw" type="number" min="4" max="40" step="1" value="10"></div>
+  <div class="field"><label for="in-vl">length (ft)</label><input id="in-vl" type="number" min="4" max="60" step="1" value="12"></div>
+  <div class="field"><label for="in-veave">eave height (ft)</label><input id="in-veave" type="number" min="4" max="12" step="0.5" value="6"></div>
+  <div class="field"><label for="in-vridge">ridge height (ft)</label><input id="in-vridge" type="number" min="4" max="16" step="0.5" value="9"></div>
+</div>
+<button id="btn-vent">Vent math</button>
+<div class="result" id="out-vent"></div>
+</section>
+
+<section class="card" id="c-mass">
+<h2>Thermal mass</h2>
+<p class="era">Water stores daytime sun and pays it back overnight. The honest question is what share of a cold night the barrels actually carry.</p>
+<div class="row">
+  <div class="field"><label for="in-floor">floor (sq ft)</label><input id="in-floor" type="number" min="20" max="2000" step="10" value="120"></div>
+  <div class="field"><label for="in-gpsf">water (gal/sq ft)</label><input id="in-gpsf" type="number" min="0.5" max="6" step="0.5" value="2.5"></div>
+  <div class="field"><label for="in-swing">day-night swing (F)</label><input id="in-swing" type="number" min="5" max="40" step="1" value="20"></div>
+  <div class="field"><label for="in-nightloss">night loss (BTU)</label><input id="in-nightloss" type="number" min="10000" max="500000" step="5000" value="100000"></div>
+</div>
+<button id="btn-mass">Mass math</button>
+<div class="result" id="out-mass"></div>
+</section>
+
+<section class="card" id="c-why">
+<h2>Why these numbers</h2>
+<details><summary>The assumptions, stated honestly</summary>
+<table>
+<tr><th>Constant</th><th>Value</th><th>Why</th></tr>
+<tr><td>Glazing U-values</td><td>glass 1.1, double poly 0.7, twin-wall 0.58</td><td>Published heat-loss coefficients (BTU/hr per sq ft per degree F)</td></tr>
+<tr><td>Infiltration</td><td>+10%</td><td>Doors, vents and seams leak heat beyond the glazing math</td></tr>
+<tr><td>Electric heat</td><td>3.412 BTU per watt</td><td>Pure conversion - electric resistance heat is 100% efficient at the socket</td></tr>
+<tr><td>Ventilation</td><td>1 air change per minute</td><td>The standard summer rule; volume sets the fan CFM directly</td></tr>
+<tr><td>Thermal mass</td><td>2.5 gal water per sq ft floor</td><td>The classic barrel wall sizing; 8.34 lb per gallon stores 1 BTU per lb per degree F</td></tr>
+</table>
+<p style="margin-top:.5rem;color:var(--muted);font-size:.85rem">Wind, snow cover and how often the door opens move every number here. The first hard frost grades the math.</p>
+</details>
+</section>
+
+<footer>
+<p><strong>GreenhouseMath</strong> - part of the App Factory collection. Honest small tools, one good idea at a time.</p>
+<p>Source: <code>engine.js</code> (pure functions, tested) &middot; <code>app.html</code> (this UI) &middot; <code>README.md</code></p>
+</footer>
+</div>
+</body>
+</html>
